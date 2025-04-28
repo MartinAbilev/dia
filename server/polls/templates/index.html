@@ -19,6 +19,13 @@
             height: 100px;
             margin-bottom: 10px;
         }
+        .buttonbox {
+            height: 80px;
+            display: flex; /* Use flexbox for alignment */
+            flex-direction: row; /* Align items horizontally */
+            align-items: center; /* Vertically center the button and spinner */
+            gap: 10px; /* Space between button and spinner */
+        }
         button {
             padding: 10px 20px;
             background-color: #007bff;
@@ -29,6 +36,26 @@
         button:hover {
             background-color: #0056b3;
         }
+        /* Spinner CSS */
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            --_c: no-repeat radial-gradient(farthest-side, #25b09b 92%, #0000);
+            background:
+                var(--_c) top,
+                var(--_c) left,
+                var(--_c) right,
+                var(--_c) bottom;
+            background-size: 12px 12px;
+            animation: l7 1s infinite;
+            visibility: hidden; /* Initially hidden but reserves space */
+        }
+        .loader.visible {
+            visibility: visible; /* Show spinner */
+        }
+        @keyframes l7 {
+            to { transform: rotate(.5turn); }
+        }
     </style>
 </head>
 <body>
@@ -37,7 +64,10 @@
         <form id="textForm" action="/generate-audio/" method="GET">
             <label for="text">Enter your text:</label><br>
             <textarea id="text" name="text" placeholder="Enter text like [S1] Hello! [S2] Hi there!" required></textarea><br>
-            <button type="submit">Generate and Play Audio</button>
+            <div class="buttonbox">
+                <button type="submit">Generate and Play Audio</button>
+                <div class="loader" id="loader"></div> <!-- Spinner after the button -->
+            </div>
         </form>
     </div>
     <audio id="audioPlayer" controls>
@@ -47,17 +77,28 @@
 
     <script>
         document.getElementById('textForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault();
             const form = event.target;
             const text = form.querySelector('#text').value;
             const audioSource = document.getElementById('audioSource');
             const audioPlayer = document.getElementById('audioPlayer');
+            const loader = document.getElementById('loader');
 
-            // Update audio source with the generate-audio endpoint and text parameter
+            // Show the spinner
+            loader.classList.add('visible');
+
             const url = `${form.action}?text=${encodeURIComponent(text)}`;
             audioSource.src = url;
-            audioPlayer.load(); // Reload the audio element
-            audioPlayer.play(); // Auto-play the audio
+            audioPlayer.load();
+
+            // Play the audio and hide the spinner on success
+            audioPlayer.play().then(() => {
+                loader.classList.remove('visible');
+            }).catch(err => {
+                // Hide the spinner on error
+                loader.classList.remove('visible');
+                console.error('Error playing audio:', err);
+            });
         });
     </script>
 </body>
