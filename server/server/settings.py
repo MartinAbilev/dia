@@ -31,6 +31,25 @@ ALLOWED_HOSTS = []
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+# Template configuration
+# TEMPLATES = [
+#     {
+#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+#         'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Points to DIA/templates/
+#         'APP_DIRS': True,
+#         'OPTIONS': {
+#             'context_processors': [
+#                 'django.template.context_processors.debug',
+#                 'django.template.context_processors.request',
+#                 'django.contrib.auth.context_processors.auth',
+#                 'django.contrib.messages.context_processors.messages',
+#             ],
+#         },
+#     },
+# ]
+
+# print("TEMPLATES DIR", TEMPLATES[0]["DIRS"])
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'polls'
 ]
 
 MIDDLEWARE = [

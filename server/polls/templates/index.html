@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Audio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Text to Audio Converter</h1>
+    <div class="form-container">
+        <form id="textForm" action="/generate-audio/" method="GET">
+            <label for="text">Enter your text:</label><br>
+            <textarea id="text" name="text" placeholder="Enter text like [S1] Hello! [S2] Hi there!" required></textarea><br>
+            <button type="submit">Generate and Play Audio</button>
+        </form>
+    </div>
+    <audio id="audioPlayer" controls>
+        <source id="audioSource" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        document.getElementById('textForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const form = event.target;
+            const text = form.querySelector('#text').value;
+            const audioSource = document.getElementById('audioSource');
+            const audioPlayer = document.getElementById('audioPlayer');
+
+            // Update audio source with the generate-audio endpoint and text parameter
+            const url = `${form.action}?text=${encodeURIComponent(text)}`;
+            audioSource.src = url;
+            audioPlayer.load(); // Reload the audio element
+            audioPlayer.play(); // Auto-play the audio
+        });
+    </script>
+</body>
+</html>

@@ -1,22 +1,32 @@
-from django.http import HttpResponse
+import io
+import tempfile
+from django.http import HttpResponse, StreamingHttpResponse
 import os
 import datetime
+from django.shortcuts import render
 import torch
 from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from dia.model import Dia
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+from django.template.loader import get_template
+# def index(request):
+#     try:
+#         template = get_template('index.html')
+#         return HttpResponse(f"Template found: {template.origin.name}")
+#     except Exception as e:
+#         return HttpResponse(f"Template error: {str(e)}")
 
+def index(request):
+    return render(request, 'index.html')
 
 # Set cache directory for Hugging Face
 cache_dir = "E:/huggingface_cache"
 os.environ["HF_HOME"] = cache_dir
 
 # Check PyTorch and CUDA setup
-# if not torch.cuda.is_available():
-#     return HttpResponse("CUDA is not available. Please check your GPU setup.", status=500)
+if not torch.cuda.is_available():
+    print("CUDA is not available. Please check your GPU setup.", status=500)
 print(torch.__version__)  # Should print 2.6.0+cu124
 print(torch.cuda.is_available())  # Should print True
 print(torch.cuda.get_device_name(0))  # Should print your RTX GPU name
@@ -32,7 +42,7 @@ try:
     print("Dia loaded with CUDA")
 except Exception as e:
     print(f"Error loading model: {e}")
-    # return HttpResponse(f"Failed to load model: {str(e)}", status=500)
+    print(f"Failed to load model: {str(e)}", status=500)
 
 def generate_audio_view(request):
 
@@ -56,43 +66,40 @@ def generate_audio_view(request):
 
     try:
         # Generate audio output
-        print("Generating text:", text)
+        print("START:", x.date(), x.now())
         output = model.generate(
             text,
             use_torch_compile=True,
-            verbose=True
+            verbose=True,
+        )
+        print("READY:", datetime.datetime.now().date(), datetime.datetime.now())
+
+        # Use a temporary file to save the audio
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
+            temp_path = temp_file.name
+            model.save_audio(temp_path, output)  # Save to temporary file
+            temp_file.seek(0)
+            # Read the temporary file into a BytesIO buffer
+            audio_buffer = io.BytesIO(temp_file.read())
+
+        # Clean up the temporary file
+        os.remove(temp_path)
+
+        # Reset buffer position
+        audio_buffer.seek(0)
+
+        # Stream the audio data
+        print("Creating Stream")
+        response = StreamingHttpResponse(
+            audio_buffer,
+            content_type='audio/mpeg'
         )
 
-        # Save the generated audio
-        model.save_audio(output_file, output)
-        print(f"Audio saved to: {output_file}")
-
-    except Exception as e:
-        print(f"Error generating audio: {e}")
-        return HttpResponse(f"Failed to generate audio: {str(e)}", status=500)
-
-    # Serve the generated audio file
-    try:
-        if os.path.exists(output_file):
-            # Open the file and keep it open for FileResponse
-            file_obj = open(output_file, 'rb')
-            response = FileResponse(
-                file_obj,
-                content_type='audio/mpeg',
-                as_attachment=True,
-                filename="sample.mp3"
-            )
-            # Note: File will be closed automatically by FileResponse
-            return response
-        else:
-            return HttpResponse("Generated audio file not found.", status=500)
-    except Exception as e:
-        print(f"Error serving file: {e}")
-        return HttpResponse(f"Error serving audio file: {str(e)}", status=500)
+        # Set Content-Disposition to inline for playback
+        print("Sending buffer")
+        response['Content-Disposition'] = 'inline; filename="sample.mp3"'
+        return response
     finally:
-        # Print timing and GPU memory usage
-        print("START:", x.date(), x.now())
-        print("READY:", datetime.datetime.now().date(), datetime.datetime.now())
         if torch.cuda.is_available():
             print(f"GPU memory allocated: {torch.cuda.memory_allocated() / 1024**2:.2f} MB")
             print(f"GPU memory reserved: {torch.cuda.memory_reserved() / 1024**2:.2f} MB")
