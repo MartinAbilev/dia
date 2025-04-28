@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Audio</title>
+    
+    {% load static %}
+    <link rel ="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,13 +83,16 @@
         document.getElementById('textForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const form = event.target;
-            const text = form.querySelector('#text').value;
             const audioSource = document.getElementById('audioSource');
             const audioPlayer = document.getElementById('audioPlayer');
             const loader = document.getElementById('loader');
+            let text = form.querySelector('#text').value;
 
             // Show the spinner
             loader.classList.add('visible');
+
+            // Check if there is  at least [S1] in text
+            if(!text.includes('[S1]')) text = '[S1] ' + text;
 
             const url = `${form.action}?text=${encodeURIComponent(text)}`;
             audioSource.src = url;

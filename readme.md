@@ -66,3 +66,4 @@ print(torch.cuda.get_device_name(0))  # Should display your RTX GPU name
 # if false
 
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+pip install python-decouple

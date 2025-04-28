@@ -26,31 +26,17 @@ SECRET_KEY = 'django-insecure--$_ov)-tj^3s7jr_jo-7vr=9)hvy(9y2&$%@vye3@@_or9nz0c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '77.38.218.82', '*']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-# Template configuration
-# TEMPLATES = [
-#     {
-#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#         'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Points to DIA/templates/
-#         'APP_DIRS': True,
-#         'OPTIONS': {
-#             'context_processors': [
-#                 'django.template.context_processors.debug',
-#                 'django.template.context_processors.request',
-#                 'django.contrib.auth.context_processors.auth',
-#                 'django.contrib.messages.context_processors.messages',
-#             ],
-#         },
-#     },
-# ]
-
-# print("TEMPLATES DIR", TEMPLATES[0]["DIRS"])
-
-# Application definition
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'  # URL prefix for static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'polls/static'),  # Directory for app-specific static files
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Directory where collectstatic will gather files for production
 
 INSTALLED_APPS = [
     'django.contrib.admin',
